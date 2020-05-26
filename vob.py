@@ -1,21 +1,43 @@
 from Log import Log
+from Vis import Vis
+from LogContainer import LogContainer
 
 import sys
 import json
 
 def main():
-    if (len(sys.argv) == 2):
-        path_list = sys.argv[1]
+    if len(sys.argv) > 2:
+        methods_per_approach_filename = sys.argv[1]
+        path_list = sys.argv[2]
+        if len(sys.argv) == 4:
+            graph_filename_prefix = sys.argv[3]
     else:
-        print("No .json file containing OVP paths provided.")
+        print("Error: File containing OVP paths or object exploration methods is missing.")
         exit()
 
     with open(path_list) as ovp_path_file:
         ovp_paths = json.load(ovp_path_file)
+    with open(methods_per_approach_filename) as methods_per_approach_file:
+        methods_per_approach = json.load(methods_per_approach_file)
 
+    log_container = LogContainer(methods_per_approach)
+    logs = []
     for filename in ovp_paths:
-        log = Log(filename)
-        print(log)
+        try:
+            logs.append(Log(filename))
+        except Exception as e:
+            print("Error: {}\nSkipping file".format(e))
+            continue
+        try:
+            log_container.add_log(Log(filename))
+        except Exception as e:
+            print("Error: {}\nSkipping file".format(e))
+            continue
+
+    print("Loaded {} log files.".format(len(logs)))
+    log_container.print_status()
+    vis = Vis()
+    vis.set_logs(log_container)
 
 if __name__ == "__main__":
     main()

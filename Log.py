@@ -1,6 +1,8 @@
 
 import json
 
+import sys
+
 class Log:
     def __init__(self, log_filename):
         self.camera_parameters = {
@@ -103,7 +105,11 @@ class Log:
         with open(log_filename) as log_file:
             log_data = json.load(log_file)
 
-        self.__check_file_structure(log_data)
+        try:
+            self.__check_file_structure(log_data)
+        except Exception as e:
+            print("Error: {}".format(e))
+            raise Exception("File {} invalid OVP file".format(log_filename))
 
         self.camera_parameters["focusing_distance_mm"] = log_data["Log"]["Camera"]["DistanceMM"]
         self.camera_parameters["focal_length"] = log_data["Log"]["Camera"]["FocalLength"]

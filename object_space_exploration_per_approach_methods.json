@@ -1,0 +1,25 @@
+{
+    "SphereSampling": [
+        "UniformSphereAvgBbox",
+        "UniformSphereConvexHull",
+        "UniformSphereFocusRepositioned",
+        "UniformSphereMaxBbox",
+        "UniformSphereMinBbox",
+        "UniformSphereMixedRepositioned",
+        "UniformSphereNoDisplacement",
+        "UniformSphere",
+        "UniformSphereCentroid"],
+    "VertexBased": [
+        "VertexCentroid",
+        "VertexNormal"],
+    "GeometryBased": [
+        "Area",
+        "ExactCurv",
+        "ThinPlate",
+        "NormalDev"]
+}
+
+
+
+
+
