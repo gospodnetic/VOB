@@ -110,10 +110,10 @@ class Vis:
                 troughs.append(min_val)
             elif i < min_length:
                 troughs.append(min_val)
-
             # Plots minimum curve using all the coverages.
             # else:
             #     troughs.append(troughs[-1])
+
         return peaks,troughs
 
     # Cumulative values can not fall, and falling peaks will appear if some methods
