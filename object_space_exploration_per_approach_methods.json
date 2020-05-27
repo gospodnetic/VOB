@@ -11,6 +11,7 @@
         "UniformSphereCentroid"],
     "VertexBased": [
         "VertexCentroid",
+        "VertexBBoxCenter",
         "VertexNormal"],
     "GeometryBased": [
         "Area",

@@ -20,26 +20,38 @@ def main():
     with open(methods_per_approach_filename) as methods_per_approach_file:
         methods_per_approach = json.load(methods_per_approach_file)
 
-    log_container = LogContainer(methods_per_approach)
+    # log_container = LogContainer(methods_per_approach)
+    log_containers_per_model = {}
     logs = []
     for filename in ovp_paths:
+        log = Log(filename)
         try:
-            logs.append(Log(filename))
+            logs.append(log)
         except Exception as e:
             print("Error: {}\nSkipping file".format(e))
             continue
+
+        model_name = log.model["name"]
+        if model_name not in log_containers_per_model:
+            print(model_name)
+            log_containers_per_model[model_name] = LogContainer(methods_per_approach)
+
         try:
-            log_container.add_log(Log(filename))
+            log_containers_per_model[model_name].add_log(log)
         except Exception as e:
             print("Error: {}\nSkipping file".format(e))
             continue
 
     print("Loaded {} log files.".format(len(logs)))
-    log_container.print_status()
     vis = Vis()
-    vis.set_logs(log_container)
+    for model in log_containers_per_model:
+        print("Model name: {}".format(model))
+        log_containers_per_model[model].print_status()
+        vis.set_logs(log_containers_per_model[model])
+        vis.generate_graphs()
+        vis.save_graphs(prefix=model, output_path="./data/")
+        # vis.show_graphs()
 
-    vis.generate_graphs()
 
 if __name__ == "__main__":
     main()

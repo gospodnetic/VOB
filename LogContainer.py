@@ -19,10 +19,6 @@ class LogContainer:
             for method in self.methods_per_approach[approach]:
                 self.approaches_per_method[method] = approach
 
-        pp = pprint.PrettyPrinter(indent=4)
-        print("Methods per approach:")
-        pp.pprint (self.methods_per_approach)
-
     def add_log(self, log):
         method = log.VPC["method"]
         if method in self.approaches_per_method:
@@ -38,3 +34,8 @@ class LogContainer:
     def print_status(self):
         for approach in self.logs_per_approach:
             print("Approach '{}' has {} logs".format(approach, len(self.logs_per_approach[approach])))
+
+    def print_methods_per_approache(self):
+        pp = pprint.PrettyPrinter(indent=4)
+        print("Methods per approach:")
+        pp.pprint (self.methods_per_approach)
