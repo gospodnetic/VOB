@@ -39,6 +39,8 @@ def main():
     vis = Vis()
     vis.set_logs(log_container)
 
+    vis.generate_graphs()
+
 if __name__ == "__main__":
     main()
 

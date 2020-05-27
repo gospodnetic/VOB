@@ -16,7 +16,7 @@ class Log:
 
         self.coverage = {
             "triangle_count": 0,
-            "percent": 0
+            "percent_fraction": 0
         }
 
         self.timing = {
@@ -58,7 +58,7 @@ class Log:
                 width: {}
             Coverage:
                 triangle_count: {}
-                percent: {}
+                percent_fraction: {}
             Timing:
                 visibility_matrix_sec: {}
                 optimization_sec: {}
@@ -85,7 +85,7 @@ class Log:
                     self.camera_parameters["height"],
                     self.camera_parameters["width"],
                     self.coverage["triangle_count"],
-                    self.coverage["percent"],
+                    self.coverage["percent_fraction"],
                     self.timing["visibility_matrix_sec"],
                     self.timing["optimization_sec"],
                     self.model["name"],
@@ -101,6 +101,7 @@ class Log:
                     len(self.optimization["vp_selection_order"]),
                     len(self.optimization["OVP"]))
 
+# Private
     def __parse_filename(self, log_filename):
         with open(log_filename) as log_file:
             log_data = json.load(log_file)
@@ -119,7 +120,7 @@ class Log:
         self.camera_parameters["width"] = log_data["Log"]["Camera"]["ResWidth"]
 
         self.coverage["triangle_count"] = log_data["Log"]["Coverage"]["InTriangles"]
-        self.coverage["triangle_count"] = log_data["Log"]["Coverage"]["Percentage"]
+        self.coverage["percent_fraction"] = log_data["Log"]["Coverage"]["Percentage"]
 
         self.timing["visibility_matrix_sec"] = log_data["Log"]["Duration"]["RayTracingSec"]
         self.timing["optimization_sec"] = log_data["Log"]["Duration"]["OptimizationSec"]
@@ -222,3 +223,22 @@ class Log:
                 raise Exception("'OVP' has no 'List' entry available.")
         else:
             raise Exception("No 'OVP' entry available.")
+
+# Public
+    # Getters
+    def get_cumulative_coverage_per_vp(self):
+        return self.convert_cumulative(self.optimization["coverage_per_vp"])
+
+    def get_cumulative_triangle_per_vp(self):
+        return self.convert_cumulative(self.optimization["triangle_per_vp"])
+
+# Utilities
+    def convert_cumulative(self, value_array):
+        cumulative_array = []
+        for i in range(len(value_array)):
+            value = 0
+            for j in range(i):
+                value += value_array[j]
+            cumulative_array.append(value)
+
+        return cumulative_array
