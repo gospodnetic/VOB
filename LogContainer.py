@@ -39,3 +39,15 @@ class LogContainer:
         pp = pprint.PrettyPrinter(indent=4)
         print("Methods per approach:")
         pp.pprint (self.methods_per_approach)
+
+    def get_logs_by_method(self, method):
+        approach = self.approaches_per_method[method]
+        if approach not in self.logs_per_approach:
+            return []
+
+        method_logs = []
+        for log in self.logs_per_approach[approach]:
+            if log.VPC["method"] == method:
+                method_logs.append(log)
+
+        return method_logs

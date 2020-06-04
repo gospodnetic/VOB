@@ -1,6 +1,8 @@
+
+from Benchmark import Benchmark
 from Log import Log
-from Vis import Vis
 from LogContainer import LogContainer
+from Vis import Vis
 
 import sys
 import json
@@ -22,7 +24,7 @@ def main():
         methods_per_approach = json.load(methods_per_approach_file)
 
     # Load log files and sort them per model.
-    log_containers_per_model = {}
+    log_container_per_model = {}
     logs = []
     for filename in ovp_paths:
         log = Log(filename)
@@ -33,12 +35,12 @@ def main():
             continue
 
         model_name = log.model["name"]
-        if model_name not in log_containers_per_model:
+        if model_name not in log_container_per_model:
             print(model_name)
-            log_containers_per_model[model_name] = LogContainer(methods_per_approach)
+            log_container_per_model[model_name] = LogContainer(methods_per_approach)
 
         try:
-            log_containers_per_model[model_name].add_log(log)
+            log_container_per_model[model_name].add_log(log)
         except Exception as e:
             print("Error: {}\nSkipping file".format(e))
             continue
@@ -46,13 +48,17 @@ def main():
 
     # Generate per-approach coverage graphs for each model
     vis = Vis()
-    for model in log_containers_per_model:
+    for model in log_container_per_model:
         print("Model name: {}".format(model))
-        log_containers_per_model[model].print_status()
-        vis.set_logs(log_containers_per_model[model])
+        log_container_per_model[model].print_status()
+        vis.set_logs(log_container_per_model[model])
         vis.generate_graphs()
         vis.save_graphs(prefix=model, output_path="./data/")
         # vis.show_graphs()
+
+    benchmark = Benchmark()
+    benchmark.set_log_containers(log_container_per_model)
+    benchmark.generate_tex_table()
 
 
 if __name__ == "__main__":
