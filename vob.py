@@ -13,6 +13,7 @@ def main():
             graph_filename_prefix = sys.argv[3]
     else:
         print("Error: File containing OVP paths or object exploration methods is missing.")
+        print("arg1 - methods_per_approach.json\narg2 - path_list\n[arg3] - graphs filename prefix")
         exit()
 
     with open(path_list) as ovp_path_file:
@@ -20,7 +21,7 @@ def main():
     with open(methods_per_approach_filename) as methods_per_approach_file:
         methods_per_approach = json.load(methods_per_approach_file)
 
-    # log_container = LogContainer(methods_per_approach)
+    # Load log files and sort them per model.
     log_containers_per_model = {}
     logs = []
     for filename in ovp_paths:
@@ -41,8 +42,9 @@ def main():
         except Exception as e:
             print("Error: {}\nSkipping file".format(e))
             continue
-
     print("Loaded {} log files.".format(len(logs)))
+
+    # Generate per-approach coverage graphs for each model
     vis = Vis()
     for model in log_containers_per_model:
         print("Model name: {}".format(model))

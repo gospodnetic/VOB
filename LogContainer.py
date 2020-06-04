@@ -9,7 +9,7 @@ class LogContainer:
         # Enabling searching by both method and approach with brute force implementation.
         # TODO: Bidirectional dictionary would be better for this.
         self.methods_per_approach = methods_per_approach
-        self.approaches_per_method = {}
+        self.approaches_per_method = set()
 
         self.__parse_methods_per_approach()
 
@@ -35,7 +35,7 @@ class LogContainer:
         for approach in self.logs_per_approach:
             print("Approach '{}' has {} logs".format(approach, len(self.logs_per_approach[approach])))
 
-    def print_methods_per_approache(self):
+    def print_methods_per_approach(self):
         pp = pprint.PrettyPrinter(indent=4)
         print("Methods per approach:")
         pp.pprint (self.methods_per_approach)

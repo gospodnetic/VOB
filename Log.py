@@ -105,7 +105,6 @@ class Log:
     def __parse_filename(self, log_filename):
         with open(log_filename) as log_file:
             log_data = json.load(log_file)
-
         try:
             self.__check_file_structure(log_data)
         except Exception as e:
@@ -139,6 +138,15 @@ class Log:
         self.optimization["triangle_per_vp"] = log_data["Log"]["TriangleCoveragePerVP"]
         self.optimization["vp_selection_order"] = log_data["Log"]["VPSelectionOrder"]
         self.optimization["OVP"] = log_data["OVP"]["List"]
+        
+        if self.optimization["coverage_per_vp"] == None:
+            self.optimization["coverage_per_vp"] = []
+        if self.optimization["triangle_per_vp"] == None:
+            self.optimization["triangle_per_vp"] = []
+        if self.optimization["vp_selection_order"] == None:
+            self.optimization["vp_selection_order"] = []
+        if self.optimization["OVP"] == None:
+            self.optimization["OVP"] = []
 
         self.__check_data()
 

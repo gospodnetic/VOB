@@ -66,8 +66,13 @@ class Vis:
         for row in stacked_coverage:
             if len(row) < max_length:
                 length_difference = max_length - len(row)
-                padding = np.full(length_difference, row[-1])
+
+                padding = np.full(length_difference, 0)
+                if len(row) != 0:
+                    padding = np.full(length_difference, row[-1])
+
                 row = np.concatenate([row,padding])
+
             matrix_stacked_coverage.append(row)
 
         return matrix_stacked_coverage
