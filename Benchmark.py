@@ -57,16 +57,16 @@ class Benchmark:
                 tex_file.write("\n& \makecell{{{}}}".format(method))
 
                 for model in models:
-                    # self.log_container_per_model[model].get_best_log()
-                    logs = self.log_container_per_model[model].get_logs_by_method(method)
-                    if len(logs) == 0:
+                    try:
+                        best_log = self.log_container_per_model[model].get_best_log(method)
+                    except:
                         tex_file.write(" & - & - & - & -")
                         continue
 
-                    VPC_count = logs[0].VPC["count"] + logs[0].VPC["discarded_count"]
-                    VPC_used = logs[0].VPC["count"]
-                    OVP = len(logs[0].optimization["OVP"])
-                    coverage = util.set_precision(logs[0].coverage["percent_fraction"] * 100, 2)
+                    VPC_count = best_log.VPC["count"] + best_log.VPC["discarded_count"]
+                    VPC_used = best_log.VPC["count"]
+                    OVP = len(best_log.optimization["OVP"])
+                    coverage = util.set_precision(best_log.coverage["percent_fraction"] * 100, 2)
                     tex_file.write(" & {} & {} & {} & {}".format(VPC_count, VPC_used, OVP, coverage))
                 tex_file.write("\\\\")
 
