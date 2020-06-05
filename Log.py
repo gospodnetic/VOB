@@ -240,6 +240,10 @@ class Log:
     def get_cumulative_triangle_per_vp(self):
         return self.convert_cumulative(self.optimization["triangle_per_vp"])
 
+    def get_discarded_quotient(self):
+        total_VPC = self.VPC["count"] + self.VPC["discarded_count"]
+        return self.VPC["discarded_count"] / total_VPC
+
 # Utilities
     def convert_cumulative(self, value_array):
         cumulative_array = []

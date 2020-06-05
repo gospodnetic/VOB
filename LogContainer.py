@@ -14,6 +14,9 @@ class LogContainer:
 
         self.__parse_methods_per_approach()
 
+    def size(self):
+        return len(self.logs)
+
     def add_log(self, log):
         method = log.VPC["method"]
         if method in self.approaches_per_method:
@@ -21,10 +24,27 @@ class LogContainer:
         else:
             raise Exception("Error: method '{}' has not been specified and is not known which approach does it belong to.".format(method))
 
+        self.logs.append(log)
+
         if approach in self.logs_per_approach:
             self.logs_per_approach[approach].append(log)
         else:
             self.logs_per_approach[approach] = [log]
+
+    def add_logs(self, input_logs):
+        for log in input_logs:
+            method = log.VPC["method"]
+            if method in self.approaches_per_method:
+                approach = self.approaches_per_method[method]
+            else:
+                raise Exception("Error: method '{}' has not been specified and is not known which approach does it belong to.".format(method))
+
+            self.logs.append(log)
+
+            if approach in self.logs_per_approach:
+                self.logs_per_approach[approach].append(log)
+            else:
+                self.logs_per_approach[approach] = [log]
 
     def print_status(self):
         for approach in self.logs_per_approach:
@@ -34,6 +54,9 @@ class LogContainer:
         pp = pprint.PrettyPrinter(indent=4)
         print("Methods per approach:")
         pp.pprint (self.methods_per_approach)
+
+    def get_methods_per_approach(self):
+        return self.methods_per_approach
 
     def get_logs_by_method(self, method):
         approach = self.approaches_per_method[method]
@@ -46,6 +69,11 @@ class LogContainer:
                 method_logs.append(log)
 
         return method_logs
+
+    def get_logs_by_approach(self, approach):
+        if approach in self.logs_per_approach:
+            return self.logs_per_approach[approach]
+        return []
 
     # Log which obtains coverage over 99% with minimal number of viewpoint candidates
     # If no log obrains coverage over 99%, the log with the greatest coverage is considered.
@@ -61,6 +89,23 @@ class LogContainer:
             return self.max_coverage_log(high_coverage_logs)
         else:
             return self.max_coverage_log(method_logs)
+
+    def get_avg_RT_duration(self):
+        if len(self.logs) == 0:
+            return 0
+
+        summed_per_vp_duration = 0
+        for log in self.logs:
+            if log.VPC["count"] == 0:
+                continue
+            summed_per_vp_duration += log.timing["visibility_matrix_sec"] / log.VPC["count"]
+        return summed_per_vp_duration / len(self.logs)
+
+    def get_avg_discarded(self):
+        discarded_sum = 0
+        for log in self.logs:
+            discarded_sum += log.get_discarded_quotient()
+        return discarded_sum / len(self.logs)
 
     def max_coverage_log(self, input_logs=None):
         if not input_logs:

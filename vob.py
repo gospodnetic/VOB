@@ -59,6 +59,8 @@ def main():
     benchmark = Benchmark()
     benchmark.set_log_containers(log_container_per_model)
     benchmark.generate_tex_table()
+    benchmark.get_average_RT_duration_per_model()
+    benchmark.get_average_discarded_per_approach()
 
 
 if __name__ == "__main__":

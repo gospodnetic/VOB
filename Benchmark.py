@@ -1,5 +1,8 @@
 
 import utilities as util
+from LogContainer import LogContainer
+
+import numpy as np
 
 class Benchmark:
     def __init__(self):
@@ -73,3 +76,36 @@ class Benchmark:
         tex_file.write("\n\\end{tabular}")
         tex_file.write("\n\\end{table*}\n")
         tex_file.close()
+
+    # Average ray tracing duration.
+    def get_average_RT_duration_per_model(self):
+        avgs = {}
+        for model in self.log_container_per_model:
+            avgs.update(
+            {
+                model: self.log_container_per_model[model].get_avg_RT_duration()
+            })
+        return avgs
+
+    def get_average_discarded_per_approach(self):
+        discarded_per_approach_list = {}
+        for approach in self.methods_per_approach:
+            for model in self.log_container_per_model:
+                log_container = LogContainer(self.log_container_per_model[model].get_methods_per_approach())
+                log_container.add_logs(self.log_container_per_model[model].get_logs_by_approach(approach))
+                if log_container.size() == 0:
+                    continue
+
+                container_avg = log_container.get_avg_discarded()
+                if approach in discarded_per_approach_list:
+                    discarded_per_approach_list[approach].append(container_avg)
+                else:
+                    discarded_per_approach_list[approach] = [container_avg]
+        
+        discarded_per_approach = {}
+        for approach in discarded_per_approach_list:
+            discarded_per_approach[approach] = np.sum(discarded_per_approach_list[approach]) / len(discarded_per_approach_list[approach])
+
+        print("discarded_per_approach: {}".format(discarded_per_approach))
+        return discarded_per_approach
+
