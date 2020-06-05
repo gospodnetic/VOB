@@ -61,6 +61,8 @@ def main():
     benchmark.generate_tex_table()
     benchmark.get_average_RT_duration_per_model()
     benchmark.get_average_discarded_per_approach()
+    benchmark.get_average_discarded_per_model()
+    benchmark.get_average_discarded_per_model_per_approach()
 
 
 if __name__ == "__main__":

@@ -109,3 +109,27 @@ class Benchmark:
         print("discarded_per_approach: {}".format(discarded_per_approach))
         return discarded_per_approach
 
+    def get_average_discarded_per_model(self):
+        discarded_per_model = {}
+        for model in self.log_container_per_model:
+            model_avg = self.log_container_per_model[model].get_avg_discarded()
+            discarded_per_model[model] = model_avg
+        print("discarded_per_model {}".format(discarded_per_model))
+        return discarded_per_model
+
+    def get_average_discarded_per_model_per_approach(self):
+        discarded_per_model_approach = {}
+        for model in self.log_container_per_model:
+            for approach in self.methods_per_approach:
+                log_container = LogContainer(self.log_container_per_model[model].get_methods_per_approach())
+                log_container.add_logs(self.log_container_per_model[model].get_logs_by_approach(approach))
+                if log_container.size() == 0:
+                    continue
+                if model in discarded_per_model_approach:
+                    discarded_per_model_approach[model][approach] = log_container.get_avg_discarded()
+                else:
+                    discarded_per_model_approach[model] = {}
+                    discarded_per_model_approach[model][approach] = log_container.get_avg_discarded()
+
+        print("discarded_per_model_approach {}".format(discarded_per_model_approach))
+        return discarded_per_model_approach
