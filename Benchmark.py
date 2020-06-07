@@ -88,20 +88,21 @@ class Benchmark:
             tex_file.write("\\multicolumn{{8}}{{|c|}}{{{} ({})}}\\\\\n".format(model, first_log.model["face_count"]))
             tex_file.write("Method & Parameter & \\#VPC & \\#Discarded & \\#OVP & RT[S] & NBV[s] & coverage \\\\\n")
             for approach in self.methods_per_approach:
-                logs_per_approach = self.log_container_per_model[model].get_logs_by_approach(approach)
-                if len(logs_per_approach) == 0:
-                    continue
+                for method in self.methods_per_approach[approach]:
+                    logs_per_method = self.log_container_per_model[model].get_logs_by_method(method)
+                    if len(logs_per_method) == 0:
+                        continue
 
-                for log in logs_per_approach:
-                    tex_file.write("{} & {} & {} & {} & {} & {} & {} & {} \\\\\n".format(
-                        log.VPC["method"],
-                        log.VPC["generation_parameter"],
-                        log.VPC["count"] + log.VPC["discarded_count"],
-                        log.VPC["discarded_count"],
-                        len(log.optimization["OVP"]),
-                        util.set_precision(log.timing["visibility_matrix_sec"], 2),
-                        util.set_precision(log.timing["optimization_sec"], 2),
-                        util.set_precision(log.coverage["percent_fraction"], 2)))
+                    for log in logs_per_method:
+                        tex_file.write("{} & {} & {} & {} & {} & {} & {} & {} \\\\\n".format(
+                            log.VPC["method"],
+                            log.VPC["generation_parameter"],
+                            log.VPC["count"] + log.VPC["discarded_count"],
+                            log.VPC["discarded_count"],
+                            len(log.optimization["OVP"]),
+                            util.set_precision(log.timing["visibility_matrix_sec"], 2),
+                            util.set_precision(log.timing["optimization_sec"], 2),
+                            util.set_precision(log.coverage["percent_fraction"], 2)))
             tex_file.write("\\hline\n")
             tex_file.write("\\end{longtable}\n")
 
