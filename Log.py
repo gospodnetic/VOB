@@ -5,6 +5,7 @@ import sys
 
 class Log:
     def __init__(self, log_filename):
+        self.filename = ""
         self.camera_parameters = {
             "focusing_distance_mm": 0,
             "focal_length": 0,
@@ -108,9 +109,10 @@ class Log:
         try:
             self.__check_file_structure(log_data)
         except Exception as e:
-            print("Error: {}".format(e))
+            # print("Error: {}".format(e))
             raise Exception("File {} invalid OVP file".format(log_filename))
 
+        self.filename = log_filename
         self.camera_parameters["focusing_distance_mm"] = log_data["Log"]["Camera"]["DistanceMM"]
         self.camera_parameters["focal_length"] = log_data["Log"]["Camera"]["FocalLength"]
         self.camera_parameters["model"] = log_data["Log"]["Camera"]["Model"]
@@ -242,7 +244,10 @@ class Log:
 
     def get_discarded_quotient(self):
         total_VPC = self.VPC["count"] + self.VPC["discarded_count"]
-        return self.VPC["discarded_count"] / total_VPC
+        if total_VPC == 0:
+            return 1
+        else:
+            return self.VPC["discarded_count"] / total_VPC
 
 # Utilities
     def convert_cumulative(self, value_array):

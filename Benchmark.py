@@ -23,7 +23,7 @@ class Benchmark:
                     else:
                         self.methods_per_approach[approach] = [method]
 
-    def generate_tex_table(self):
+    def generate_performance_tex_table(self):
         tex_file = open("performance_table.tex", "w")
 
         tex_file.write("\n\\begin{table*}\n")
@@ -76,6 +76,34 @@ class Benchmark:
         tex_file.write("\n\\end{tabular}")
         tex_file.write("\n\\end{table*}\n")
         tex_file.close()
+
+    # \usepackage{longtable} needed.
+    def generate_complete_tex_table(self):
+        tex_file = open("complete_table.tex", "w")
+
+        for model in self.log_container_per_model:
+            tex_file.write("\n\\begin{longtable}{|c c c c c c c c|}\n")
+            tex_file.write("\\hline\n")
+            first_log = self.log_container_per_model[model].logs[0]
+            tex_file.write("\\multicolumn{{8}}{{|c|}}{{{} ({})}}\\\\\n".format(model, first_log.model["face_count"]))
+            tex_file.write("Method & Parameter & \\#VPC & \\#Discarded & \\#OVP & RT[S] & NBV[s] & coverage \\\\\n")
+            for approach in self.methods_per_approach:
+                logs_per_approach = self.log_container_per_model[model].get_logs_by_approach(approach)
+                if len(logs_per_approach) == 0:
+                    continue
+
+                for log in logs_per_approach:
+                    tex_file.write("{} & {} & {} & {} & {} & {} & {} & {} \\\\\n".format(
+                        log.VPC["method"],
+                        log.VPC["generation_parameter"],
+                        log.VPC["count"] + log.VPC["discarded_count"],
+                        log.VPC["discarded_count"],
+                        len(log.optimization["OVP"]),
+                        util.set_precision(log.timing["visibility_matrix_sec"], 2),
+                        util.set_precision(log.timing["optimization_sec"], 2),
+                        util.set_precision(log.coverage["percent_fraction"], 2)))
+            tex_file.write("\\hline\n")
+            tex_file.write("\\end{longtable}\n")
 
     # Average ray tracing duration.
     def get_average_RT_duration_per_model(self):

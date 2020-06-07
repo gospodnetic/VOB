@@ -4,8 +4,24 @@ from Log import Log
 from LogContainer import LogContainer
 from Vis import Vis
 
+import os
+import pathlib
 import sys
 import json
+
+def filter_json(filenames):
+    return list(filter(lambda x: pathlib.Path(x).suffix == '.json', filenames))
+
+def extract_json_filenames(json_list):
+    ovp_filenames = []
+    for path in json_list:
+        if os.path.isdir(path):
+            for (dirpath, dirnames, filenames) in os.walk(path):
+                ovp_filenames.extend(list(map(lambda x: dirpath + "/" + x, filenames)))
+                break
+        else:
+            ovp_filenames.append(path)
+    return filter_json(ovp_filenames)
 
 def main():
     if len(sys.argv) > 2:
@@ -23,26 +39,29 @@ def main():
     with open(methods_per_approach_filename) as methods_per_approach_file:
         methods_per_approach = json.load(methods_per_approach_file)
 
+    filenames = extract_json_filenames(ovp_paths)
+
     # Load log files and sort them per model.
     log_container_per_model = {}
     logs = []
-    for filename in ovp_paths:
-        log = Log(filename)
+    for idx, filename in enumerate(filenames):
+        print("Loading file {}/{}        ".format(idx+1, len(filenames)), end="\r")
         try:
+            log = Log(filename)
             logs.append(log)
         except Exception as e:
-            print("Error: {}\nSkipping file".format(e))
+            # TODO add verbose
+            # print("Error: {}\nSkipping file".format(e))
             continue
 
         model_name = log.model["name"]
         if model_name not in log_container_per_model:
-            print(model_name)
             log_container_per_model[model_name] = LogContainer(methods_per_approach)
 
         try:
             log_container_per_model[model_name].add_log(log)
         except Exception as e:
-            print("Error: {}\nSkipping file".format(e))
+            # print("Error: {}\nSkipping file".format(e))
             continue
     print("Loaded {} log files.".format(len(logs)))
 
@@ -58,7 +77,8 @@ def main():
 
     benchmark = Benchmark()
     benchmark.set_log_containers(log_container_per_model)
-    benchmark.generate_tex_table()
+    benchmark.generate_performance_tex_table()
+    benchmark.generate_complete_tex_table()
     benchmark.get_average_RT_duration_per_model()
     benchmark.get_average_discarded_per_approach()
     benchmark.get_average_discarded_per_model()
