@@ -1,4 +1,3 @@
-
 import utilities as util
 from LogContainer import LogContainer
 
@@ -23,13 +22,22 @@ class Benchmark:
                     else:
                         self.methods_per_approach[approach] = [method]
 
-    def generate_performance_tex_table(self):
-        tex_file = open("performance_table.tex", "w")
+    def generate_performance_tex_table(self, output_path = "./", coverage_threshold=0.99, with_discarded=True):
+        filename = output_path
+        if with_discarded:
+            filename += "performance_table_discarded.tex"
+        else:
+            filename += "performance_table.tex"
+        tex_file = open(filename, "w")
 
         tex_file.write("\n\\begin{table*}\n")
+        tex_file.write("\\centering\n")
         tex_file.write("\\begin{tabular}{|c| c|")
         for model in self.log_container_per_model:
-            tex_file.write(" c c c c|")
+            if with_discarded:
+                tex_file.write(" c c c c|")
+            else:
+                tex_file.write(" c c c|")
         tex_file.write("}\n")
         tex_file.write("\\hline\n")
 
@@ -38,48 +46,84 @@ class Benchmark:
 
         # Put models into array to ensure the order is always maintained.
         models = []
-        for model in self.log_container_per_model:
-            tex_file.write(" & \\multicolumn{{4}}{{|c|}}{{{}}}".format(model))
-            models.append(model)
-        tex_file.write("\\\\\n")
-        
-        # Header - column names
-        tex_file.write("\\hline\n")
-        tex_file.write("Approach & Method")
-        for model in models:
-            tex_file.write(" & \\#VPC & \\makecell{\\#VPC\\\\used} & \\#OVP & \\%")
-        tex_file.write("\\\\\n")
+        if with_discarded:
+            for model in self.log_container_per_model:
+                tex_file.write(" & \\multicolumn{{4}}{{|c|}}{{{}}}".format(model))
+                models.append(model)
+            tex_file.write("\\\\\n")
+            
+            # Header - column names
+            tex_file.write("\\hline\n")
+            tex_file.write("Approach & Method")
+            for model in models:
+                tex_file.write(" & \\#VPC & \\makecell{\\#VPC\\\\used} & \\#OVP & \\%")
+            tex_file.write("\\\\\n")
 
 
-        for approach in self.methods_per_approach:
-            method_count = len(self.methods_per_approach[approach])
-            tex_file.write("\n\\hline\n")
-            tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(method_count, approach))
+            for approach in self.methods_per_approach:
+                method_count = len(self.methods_per_approach[approach])
+                tex_file.write("\n\\hline\n")
+                tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(method_count, approach))
 
-            for method in self.methods_per_approach[approach]:
-                tex_file.write("\n& \makecell{{{}}}".format(method))
+                for method in self.methods_per_approach[approach]:
+                    tex_file.write("\n& \makecell{{{}}}".format(method))
 
-                for model in models:
-                    try:
-                        best_log = self.log_container_per_model[model].get_best_log(method)
-                    except:
-                        tex_file.write(" & - & - & - & -")
-                        continue
+                    for model in models:
+                        try:
+                            best_log = self.log_container_per_model[model].get_best_log(method, coverage_threshold)
+                        except Exception as e:
+                            tex_file.write(" & - & - & - & -")
+                            continue
 
-                    VPC_count = best_log.VPC["count"] + best_log.VPC["discarded_count"]
-                    VPC_used = best_log.VPC["count"]
-                    OVP = len(best_log.optimization["OVP"])
-                    coverage = util.set_precision(best_log.coverage["percent_fraction"] * 100, 2)
-                    tex_file.write(" & {} & {} & {} & {}".format(VPC_count, VPC_used, OVP, coverage))
-                tex_file.write("\\\\")
+                        VPC_count = best_log.VPC["count"] + best_log.VPC["discarded_count"]
+                        VPC_used = best_log.VPC["count"]
+                        OVP = len(best_log.optimization["OVP"])
+                        coverage = util.set_precision(best_log.coverage["percent_fraction"] * 100, 2)
+                        tex_file.write(" & {} & {} & {} & {}".format(VPC_count, VPC_used, OVP, coverage))
+                    tex_file.write("\\\\")
+        else:
+            for model in self.log_container_per_model:
+                tex_file.write(" & \\multicolumn{{3}}{{|c|}}{{{}}}".format(model))
+                models.append(model)
+            tex_file.write("\\\\\n")
+            
+            # Header - column names
+            tex_file.write("\\hline\n")
+            tex_file.write("Approach & Method")
+            for model in models:
+                tex_file.write(" & \\#VPC & \\#OVP & \\%")
+            tex_file.write("\\\\\n")
 
-        tex_file.write("\n\\end{tabular}")
+
+            for approach in self.methods_per_approach:
+                method_count = len(self.methods_per_approach[approach])
+                tex_file.write("\n\\hline\n")
+                tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(method_count, approach))
+
+                for method in self.methods_per_approach[approach]:
+                    tex_file.write("\n& \makecell{{{}}}".format(method))
+
+                    for model in models:
+                        try:
+                            best_log = self.log_container_per_model[model].get_best_log(method, coverage_threshold)
+                        except Exception as e:
+                            tex_file.write(" & - & - & -")
+                            continue
+
+                        VPC_count = best_log.VPC["count"] + best_log.VPC["discarded_count"]
+                        OVP = len(best_log.optimization["OVP"])
+                        coverage = util.set_precision(best_log.coverage["percent_fraction"] * 100, 2)
+                        tex_file.write(" & {} & {} & {}".format(VPC_count, OVP, coverage))
+                    tex_file.write("\\\\")
+
+        tex_file.write("\n\\hline\n")
+        tex_file.write("\\end{tabular}")
         tex_file.write("\n\\end{table*}\n")
         tex_file.close()
 
     # \usepackage{longtable} needed.
-    def generate_complete_tex_table(self):
-        tex_file = open("complete_table.tex", "w")
+    def generate_complete_tex_table(self, output_path = "./"):
+        tex_file = open(output_path + "complete_table.tex", "w")
 
         for model in self.log_container_per_model:
             tex_file.write("\n\\begin{longtable}{|c c c c c c c c|}\n")
@@ -138,6 +182,28 @@ class Benchmark:
         print("discarded_per_approach: {}".format(discarded_per_approach))
         return discarded_per_approach
 
+    def get_average_discarded_per_method(self):
+        discarded_per_method_list = {}
+        for approach in self.methods_per_approach:
+            for method in self.methods_per_approach[approach]:
+                for model in self.log_container_per_model:
+                    log_container = LogContainer(self.log_container_per_model[model].get_methods_per_approach())
+                    log_container.add_logs(self.log_container_per_model[model].get_logs_by_method(method))
+                    if log_container.size() == 0:
+                        continue
+
+                    container_avg = log_container.get_avg_discarded()
+                    if method in discarded_per_method_list:
+                        discarded_per_method_list[method].append(container_avg)
+                    else:
+                        discarded_per_method_list[method] = [container_avg]
+        discarded_per_method = {}
+        for method in discarded_per_method_list:
+            discarded_per_method[method] = np.sum(discarded_per_method_list[method]) / len(discarded_per_method_list[method])
+
+        print ("discarded_per_method: {}".format(discarded_per_method))
+        return discarded_per_method
+
     def get_average_discarded_per_model(self):
         discarded_per_model = {}
         for model in self.log_container_per_model:
@@ -145,6 +211,24 @@ class Benchmark:
             discarded_per_model[model] = model_avg
         print("discarded_per_model {}".format(discarded_per_model))
         return discarded_per_model
+
+    def get_average_discarded_per_model_per_method(self):
+        discarded_per_model_method = {}
+        for model in self.log_container_per_model:
+            for approach in self.methods_per_approach:
+                for method in self.methods_per_approach[approach]:
+                    log_container = LogContainer(self.log_container_per_model[model].get_methods_per_approach())
+                    log_container.add_logs(self.log_container_per_model[model].get_logs_by_method(method))
+                    if log_container.size() == 0:
+                        continue
+                    if model in discarded_per_model_method:
+                        discarded_per_model_method[model][method] = log_container.get_avg_discarded()
+                    else:
+                        discarded_per_model_method[model] = {}
+                        discarded_per_model_method[model][method] = log_container.get_avg_discarded()
+
+        print("discarded_per_model_method {}".format(discarded_per_model_method))
+        return discarded_per_model_method
 
     def get_average_discarded_per_model_per_approach(self):
         discarded_per_model_approach = {}

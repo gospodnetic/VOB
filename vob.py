@@ -82,12 +82,15 @@ def main():
 
     benchmark = Benchmark()
     benchmark.set_log_containers(log_container_per_model)
-    benchmark.generate_performance_tex_table()
-    benchmark.generate_complete_tex_table()
+    benchmark.generate_performance_tex_table(output_path="./data/", coverage_threshold=0.98, with_discarded=True)
+    benchmark.generate_performance_tex_table(output_path="./data/", coverage_threshold=0.98, with_discarded=False)
+    benchmark.generate_complete_tex_table(output_path="./data/")
     benchmark.get_average_RT_duration_per_model()
     benchmark.get_average_discarded_per_approach()
+    benchmark.get_average_discarded_per_method()
     benchmark.get_average_discarded_per_model()
     benchmark.get_average_discarded_per_model_per_approach()
+    benchmark.get_average_discarded_per_model_per_method()
 
 
 if __name__ == "__main__":

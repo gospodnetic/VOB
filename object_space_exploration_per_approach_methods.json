@@ -1,16 +1,13 @@
 {
     "SphereSampling": [
-        "UniformSphereAvgBbox",
-        "UniformSphereConvexHull",
-        "UniformSphereFocusRepositioned",
-        "UniformSphereMaxBbox",
-        "UniformSphereMinBbox",
-        "UniformSphereMixedRepositioned",
-        "UniformSphereNoDisplacement",
-        "UniformSphere",
-        "UniformSphereCentroid"],
+        "AvgBbox",
+        "ConvexHull",
+        "FocusRepositioned",
+        "MaxBbox",
+        "MinBbox",
+        "MixedRepositioned",
+        "NoDisplacement"],
     "VertexBased": [
-        "VertexCentroid",
         "VertexBBoxCenter",
         "VertexNormal"],
     "GeometryBased": [

@@ -77,16 +77,15 @@ class LogContainer:
 
     # Log which obtains coverage over 99% with minimal number of viewpoint candidates
     # If no log obrains coverage over 99%, the log with the greatest coverage is considered.
-    def get_best_log(self, method):
+    def get_best_log(self, method, coverage_threshold=0.99):
         method_logs = self.get_logs_by_method(method)
         if len(method_logs) == 0:
             raise Exception("Error: No logs available for given method ({})".format(method))
 
         # Find logs with coverage >99%.
-        high_coverage_logs = self.__filter_coverage_threshold(method_logs, 0.99, ComparisonType.GEQ)
-
+        high_coverage_logs = self.__filter_coverage_threshold(method_logs, coverage_threshold, ComparisonType.GEQ)
         if len(high_coverage_logs) > 0:
-            return self.max_coverage_log(high_coverage_logs)
+            return self.min_used_vpc_log(high_coverage_logs)
         else:
             return self.max_coverage_log(method_logs)
 
@@ -118,7 +117,22 @@ class LogContainer:
         for log in input_logs:
             if log.coverage["percent_fraction"] > max_coverage:
                 max_log = log
+                max_coverage = log.coverage["percent_fraction"]
         return max_log
+
+    def min_used_vpc_log(self, input_logs=None):
+        if not input_logs:
+            input_logs = self.logs
+        if len(input_logs) == 0:
+            raise Exception("Error: no logs available.")
+
+        min_VPC  = input_logs[0].VPC["count"]
+        min_log = input_logs[0]
+        for log in input_logs:
+            if log.VPC["count"] < min_VPC:
+                min_log = log
+                min_VPC = log.VPC["count"]
+        return min_log
 
     def __parse_methods_per_approach(self):
         self.approaches_per_method = {}
