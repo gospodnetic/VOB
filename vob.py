@@ -46,6 +46,11 @@ def main():
     logs = []
     for idx, filename in enumerate(filenames):
         print("Loading file {}/{}        ".format(idx+1, len(filenames)), end="\r")
+        # VP-Tri maps are big and take long to load, only to see there is nothing there.
+        # Currently the maps can be only distinguished by having this string in the filename.
+        if "VP-Tri_Map" in filename:
+            continue
+
         try:
             log = Log(filename)
             logs.append(log)
