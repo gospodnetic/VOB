@@ -16,12 +16,18 @@ def extract_json_filenames(json_list):
     ovp_filenames = []
     for path in json_list:
         if os.path.isdir(path):
-            for (dirpath, dirnames, filenames) in os.walk(path):
-                ovp_filenames.extend(list(map(lambda x: dirpath + "/" + x, filenames)))
-                break
+            ovp_filenames.extend(extract_files_from_dir(path))
         else:
             ovp_filenames.append(path)
     return filter_json(ovp_filenames)
+
+def extract_files_from_dir(dir_path):
+    filenames = []
+    if os.path.isdir(dir_path):
+        for (dirpath, dirnames, filenames) in os.walk(dir_path):
+            filenames.extend(list(map(lambda x: dirpath + "/" + x, filenames)))
+            break
+    return filenames
 
 def main():
     if len(sys.argv) > 2:
@@ -34,12 +40,15 @@ def main():
         print("arg1 - methods_per_approach.json\narg2 - path_list\n[arg3] - graphs filename prefix")
         exit()
 
-    with open(path_list) as ovp_path_file:
-        ovp_paths = json.load(ovp_path_file)
+    if (os.path.isdir(path_list)):
+        filenames = filter_json(extract_files_from_dir(path_list))
+    else:
+        with open(path_list) as ovp_path_file:
+            ovp_paths = json.load(ovp_path_file)
+        filenames = extract_json_filenames(ovp_paths)
+
     with open(methods_per_approach_filename) as methods_per_approach_file:
         methods_per_approach = json.load(methods_per_approach_file)
-
-    filenames = extract_json_filenames(ovp_paths)
 
     # Load log files and sort them per model.
     log_container_per_model = {}

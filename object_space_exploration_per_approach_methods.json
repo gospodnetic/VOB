@@ -1,14 +1,17 @@
 {
     "SphereSampling": [
         "AvgBbox",
-        "ConvexHull",
-        "FocusRepositioned",
         "MaxBbox",
         "MinBbox",
+        "ConvexHull",
+        "ConvexHullNormal",
+        "FocusRepositioned",
+        "FocusRepositionedNormal",
         "MixedRepositioned",
+        "MixedRepositionedNormal",
         "NoDisplacement"],
     "VertexBased": [
-        "VertexBBoxCenter",
+        "VertexBboxCenter",
         "VertexNormal"],
     "GeometryBased": [
         "Area",

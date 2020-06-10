@@ -128,6 +128,9 @@ class Benchmark:
         for model in self.log_container_per_model:
             tex_file.write("\n\\begin{longtable}{|c c c c c c c c|}\n")
             tex_file.write("\\hline\n")
+            if self.log_container_per_model[model].size() == 0:
+                raise Exception("Model log container of size 0, Object space exploration approach method likely not specified!")
+
             first_log = self.log_container_per_model[model].logs[0]
             tex_file.write("\\multicolumn{{8}}{{|c|}}{{{} ({})}}\\\\\n".format(model, first_log.model["face_count"]))
             tex_file.write("Method & Parameter & \\#VPC & \\#Discarded & \\#OVP & RT[S] & NBV[s] & coverage \\\\\n")
