@@ -22,6 +22,92 @@ class Benchmark:
                     else:
                         self.methods_per_approach[approach] = [method]
 
+    def generate_statistic_tex(self, output_path = "./"):
+        # Per model per method.
+        filename = output_path + "stats_per_method.tex"
+        tex_file = open(filename, "w")
+
+        tex_file.write("\n\\begin{table*}\n")
+        tex_file.write("\\centering\n")
+        tex_file.write("\\begin{tabular}{|c|")
+        tex_file.write(" c|" * len(self.log_container_per_model))
+        tex_file.write("}\n")
+        tex_file.write("\\hline\n")
+
+        discarded_per_method = self.get_average_discarded_per_method()
+        discarded_per_model_per_method = self.get_average_discarded_per_model_per_method()
+
+        # Write header.
+        tex_file.write(" ")
+        for model in self.log_container_per_model:
+            tex_file.write(" & {}".format(model))
+        tex_file.write("\\\\\n")
+
+        for method in discarded_per_method:
+            #  Average value over all models.
+            tex_file.write("\n\\hline\n")
+            tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(2, method))
+            value = util.set_precision(discarded_per_method[method] * 100, 2)
+            tex_file.write("\n& \\multicolumn{{4}}{{c|}}{{{}}}".format(value))
+            tex_file.write("\\\\\n")
+            # Draw horizontal line spanning only under the multicolumn section.
+            tex_file.write("\n\\cline{{2-{}}}\n".format(len(self.log_container_per_model) + 1))
+            # Average value for each model.
+            for model in discarded_per_model_per_method:
+                value = util.set_precision(discarded_per_model_per_method[model][method] * 100, 2)
+                tex_file.write(" & \\makecell{{{}}}".format(value))
+            tex_file.write("\\\\\n")
+        
+        tex_file.write("\n\\hline\n")
+        tex_file.write("\\end{tabular}")
+        tex_file.write("\n\\end{table*}\n")
+        tex_file.close()
+
+        # Per model per approach.
+        filename = output_path + "stats_per_approach.tex"
+        tex_file = open(filename, "w")
+
+        tex_file.write("\n\\begin{table*}\n")
+        tex_file.write("\\centering\n")
+        tex_file.write("\\begin{tabular}{|c|")
+        tex_file.write(" c|" * len(self.log_container_per_model))
+        tex_file.write("}\n")
+        tex_file.write("\\hline\n")
+
+        discarded_per_approach = self.get_average_discarded_per_approach()
+        discarded_per_model_per_approach = self.get_average_discarded_per_model_per_approach()
+
+        # Write header.
+        tex_file.write(" ")
+        for model in self.log_container_per_model:
+            tex_file.write(" & {}".format(model))
+        tex_file.write("\\\\\n")
+
+        for approach in discarded_per_approach:
+            print(approach)
+            #  Average value over all models.
+            tex_file.write("\n\\hline\n")
+            tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(2, approach))
+            value = util.set_precision(discarded_per_approach[approach] * 100, 2)
+            tex_file.write("\n& \\multicolumn{{4}}{{c|}}{{{}}}".format(value))
+            tex_file.write("\\\\\n")
+            # Draw horizontal line spanning only under the multicolumn section.
+            tex_file.write("\n\\cline{{2-{}}}\n".format(len(self.log_container_per_model) + 1))
+            # Average value for each model.
+            for model in discarded_per_model_per_approach:
+                value = util.set_precision(discarded_per_model_per_approach[model][approach] * 100, 2)
+                tex_file.write(" & \\makecell{{{}}}".format(value))
+            tex_file.write("\\\\\n")
+        
+        tex_file.write("\n\\hline\n")
+        tex_file.write("\\end{tabular}")
+        tex_file.write("\n\\end{table*}\n")
+        tex_file.close()
+
+
+
+    # \usepackage{makecell} needed.
+    # \usepackage{multirow} needed.
     def generate_performance_tex_table(self, output_path = "./", coverage_threshold=0.99, with_discarded=True):
         filename = output_path
         if with_discarded:
@@ -147,11 +233,13 @@ class Benchmark:
                             log.VPC["count"] + log.VPC["discarded_count"],
                             log.VPC["discarded_count"],
                             len(log.optimization["OVP"]),
-                            util.set_precision(log.timing["visibility_matrix_sec"], 2),
-                            util.set_precision(log.timing["optimization_sec"], 2),
-                            util.set_precision(log.coverage["percent_fraction"], 2)))
+                            util.set_precision(log.timing["visibility_matrix_sec"], 4),
+                            util.set_precision(log.timing["optimization_sec"], 4),
+                            util.set_precision(log.coverage["percent_fraction"], 4)))
             tex_file.write("\\hline\n")
             tex_file.write("\\end{longtable}\n")
+
+        tex_file.close()
 
     # Average ray tracing duration.
     def get_average_RT_duration_per_model(self):
@@ -182,7 +270,6 @@ class Benchmark:
         for approach in discarded_per_approach_list:
             discarded_per_approach[approach] = np.sum(discarded_per_approach_list[approach]) / len(discarded_per_approach_list[approach])
 
-        print("discarded_per_approach: {}".format(discarded_per_approach))
         return discarded_per_approach
 
     def get_average_discarded_per_method(self):
@@ -204,7 +291,6 @@ class Benchmark:
         for method in discarded_per_method_list:
             discarded_per_method[method] = np.sum(discarded_per_method_list[method]) / len(discarded_per_method_list[method])
 
-        print ("discarded_per_method: {}".format(discarded_per_method))
         return discarded_per_method
 
     def get_average_discarded_per_model(self):
@@ -230,7 +316,6 @@ class Benchmark:
                         discarded_per_model_method[model] = {}
                         discarded_per_model_method[model][method] = log_container.get_avg_discarded()
 
-        print("discarded_per_model_method {}".format(discarded_per_model_method))
         return discarded_per_model_method
 
     def get_average_discarded_per_model_per_approach(self):
@@ -247,5 +332,4 @@ class Benchmark:
                     discarded_per_model_approach[model] = {}
                     discarded_per_model_approach[model][approach] = log_container.get_avg_discarded()
 
-        print("discarded_per_model_approach {}".format(discarded_per_model_approach))
         return discarded_per_model_approach

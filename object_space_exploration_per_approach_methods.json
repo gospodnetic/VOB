@@ -11,7 +11,7 @@
         "MixedRepositionedNormal",
         "NoDisplacement"],
     "VertexBased": [
-        "VertexBboxCenter",
+        "VertexBBoxCenter",
         "VertexNormal"],
     "GeometryBased": [
         "Area",

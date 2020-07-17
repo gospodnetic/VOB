@@ -24,8 +24,8 @@ def extract_json_filenames(json_list):
 def extract_files_from_dir(dir_path):
     filenames = []
     if os.path.isdir(dir_path):
-        for (dirpath, dirnames, filenames) in os.walk(dir_path):
-            filenames.extend(list(map(lambda x: dirpath + "/" + x, filenames)))
+        for (dirpath, dirnames, dir_filenames) in os.walk(dir_path):
+            filenames.extend(list(map(lambda x: dirpath + "/" + x, dir_filenames)))
             break
     return filenames
 
@@ -35,6 +35,8 @@ def main():
         path_list = sys.argv[2]
         if len(sys.argv) == 4:
             graph_filename_prefix = sys.argv[3]
+        else:
+            graph_filename_prefix = ""
     else:
         print("Error: File containing OVP paths or object exploration methods is missing.")
         print("arg1 - methods_per_approach.json\narg2 - path_list\n[arg3] - graphs filename prefix")
@@ -86,7 +88,7 @@ def main():
         log_container_per_model[model].print_status()
         vis.set_logs(log_container_per_model[model])
         vis.generate_graphs()
-        vis.save_graphs(prefix=model, output_path="./data/")
+        vis.save_graphs(prefix="{}_{}".format(graph_filename_prefix, model), output_path="./data/")
         # vis.show_graphs()
 
     benchmark = Benchmark()
@@ -94,12 +96,9 @@ def main():
     benchmark.generate_performance_tex_table(output_path="./data/", coverage_threshold=0.98, with_discarded=True)
     benchmark.generate_performance_tex_table(output_path="./data/", coverage_threshold=0.98, with_discarded=False)
     benchmark.generate_complete_tex_table(output_path="./data/")
-    benchmark.get_average_RT_duration_per_model()
-    benchmark.get_average_discarded_per_approach()
-    benchmark.get_average_discarded_per_method()
+    benchmark.generate_statistic_tex(output_path="./data/")
+    print("average duration per model", benchmark.get_average_RT_duration_per_model())
     benchmark.get_average_discarded_per_model()
-    benchmark.get_average_discarded_per_model_per_approach()
-    benchmark.get_average_discarded_per_model_per_method()
 
 
 if __name__ == "__main__":
