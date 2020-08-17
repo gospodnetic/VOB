@@ -2,11 +2,18 @@ import utilities as util
 from LogContainer import LogContainer
 
 import numpy as np
+from enum import Enum
+
+class TableOrientation(Enum):
+    VERTICAL    = 0
+    HORIZONTAL  = 1
 
 class Benchmark:
     def __init__(self):
         self.log_container_per_model = {}
         self.methods_per_approach = {}
+        self.method_list = set()
+        self.approach_list = set()
 
     def set_log_containers(self, log_container_per_model):
         self.log_container_per_model = log_container_per_model
@@ -15,99 +22,191 @@ class Benchmark:
     def __extract_methods_per_approach(self):
         for model in self.log_container_per_model:
             for approach in self.log_container_per_model[model].methods_per_approach:
+                self.approach_list.add(approach)
                 for method in self.log_container_per_model[model].methods_per_approach[approach]:
+                    self.method_list.add(method)
                     if approach in self.methods_per_approach:
                         if method not in self.methods_per_approach[approach]:
                             self.methods_per_approach[approach].append(method)
                     else:
                         self.methods_per_approach[approach] = [method]
 
-    def generate_statistic_tex(self, output_path = "./"):
+    # Generate average discarded values both per approach and per method
+    def generate_statistic_tex(self, orientation = TableOrientation.VERTICAL, output_path = "./"):
         # Per model per method.
-        filename = output_path + "stats_per_method.tex"
-        tex_file = open(filename, "w")
+        filename_per_method = output_path + "stats_per_method.tex"
+        filename_per_approach = output_path + "stats_per_approach.tex"
+        if (orientation == TableOrientation.VERTICAL):
+            self._generate_statistic_per_method_vertical(filename_per_method)
+            self._generate_statistic_per_approach_vertical(filename_per_approach)
+            # Per model per approach.
+        else:
+            self._generate_statistic_per_method_horizontal(filename_per_method)
+            self._generate_statistic_per_approach_horizontal(filename_per_approach)
 
-        tex_file.write("\n\\begin{table*}\n")
-        tex_file.write("\\centering\n")
-        tex_file.write("\\begin{tabular}{|c|")
-        tex_file.write(" c|" * len(self.log_container_per_model))
-        tex_file.write("}\n")
-        tex_file.write("\\hline\n")
+    def _generate_statistic_per_approach_vertical(self, filename):
+            tex_file = open(filename, "w")
 
-        discarded_per_method = self.get_average_discarded_per_method()
-        discarded_per_model_per_method = self.get_average_discarded_per_model_per_method()
+            tex_file.write("\n\\begin{table*}\n")
+            tex_file.write("\\centering\n")
+            tex_file.write("\\begin{tabular}{|c|")
+            tex_file.write(" c|" * len(self.log_container_per_model))
+            tex_file.write("}\n")
+            tex_file.write("\\hline\n")
 
-        # Write header.
-        tex_file.write(" ")
-        for model in self.log_container_per_model:
-            tex_file.write(" & {}".format(model))
-        tex_file.write("\\\\\n")
+            discarded_per_approach = self.get_average_discarded_per_approach()
+            discarded_per_model_per_approach = self.get_average_discarded_per_model_per_approach()
 
-        for method in discarded_per_method:
-            #  Average value over all models.
+            # Write header.
+            tex_file.write(" ")
+            for model in self.log_container_per_model:
+                tex_file.write(" & {}".format(model))
+            tex_file.write("\\\\\n")
+
+            for approach in discarded_per_approach:
+                print(approach)
+                #  Average value over all models.
+                tex_file.write("\n\\hline\n")
+                tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(2, approach))
+                value = util.set_precision(discarded_per_approach[approach] * 100, 2)
+                tex_file.write("\n& \\multicolumn{{4}}{{c|}}{{{}}}".format(value))
+                tex_file.write("\\\\\n")
+                # Draw horizontal line spanning only under the multicolumn section.
+                tex_file.write("\n\\cline{{2-{}}}\n".format(len(self.log_container_per_model) + 1))
+                # Average value for each model.
+                for model in discarded_per_model_per_approach:
+                    value = util.set_precision(discarded_per_model_per_approach[model][approach] * 100, 2)
+                    tex_file.write(" & \\makecell{{{}}}".format(value))
+                tex_file.write("\\\\\n")
+            
             tex_file.write("\n\\hline\n")
-            tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(2, method))
-            value = util.set_precision(discarded_per_method[method] * 100, 2)
-            tex_file.write("\n& \\multicolumn{{4}}{{c|}}{{{}}}".format(value))
+            tex_file.write("\\end{tabular}")
+            tex_file.write("\n\\end{table*}\n")
+            tex_file.close()
+
+    def _generate_statistic_per_method_vertical(self, filename):
+            tex_file = open(filename, "w")
+
+            tex_file.write("\n\\begin{table*}\n")
+            tex_file.write("\\centering\n")
+            tex_file.write("\\begin{tabular}{|c|")
+            tex_file.write(" c|" * len(self.log_container_per_model))
+            tex_file.write("}\n")
+            tex_file.write("\\hline\n")
+
+            discarded_per_method = self.get_average_discarded_per_method()
+            discarded_per_model_per_method = self.get_average_discarded_per_model_per_method()
+
+            # Write header.
+            tex_file.write(" ")
+            for model in self.log_container_per_model:
+                tex_file.write(" & {}".format(model))
             tex_file.write("\\\\\n")
-            # Draw horizontal line spanning only under the multicolumn section.
-            tex_file.write("\n\\cline{{2-{}}}\n".format(len(self.log_container_per_model) + 1))
-            # Average value for each model.
-            for model in discarded_per_model_per_method:
-                value = util.set_precision(discarded_per_model_per_method[model][method] * 100, 2)
-                tex_file.write(" & \\makecell{{{}}}".format(value))
-            tex_file.write("\\\\\n")
-        
-        tex_file.write("\n\\hline\n")
-        tex_file.write("\\end{tabular}")
-        tex_file.write("\n\\end{table*}\n")
-        tex_file.close()
 
-        # Per model per approach.
-        filename = output_path + "stats_per_approach.tex"
-        tex_file = open(filename, "w")
-
-        tex_file.write("\n\\begin{table*}\n")
-        tex_file.write("\\centering\n")
-        tex_file.write("\\begin{tabular}{|c|")
-        tex_file.write(" c|" * len(self.log_container_per_model))
-        tex_file.write("}\n")
-        tex_file.write("\\hline\n")
-
-        discarded_per_approach = self.get_average_discarded_per_approach()
-        discarded_per_model_per_approach = self.get_average_discarded_per_model_per_approach()
-
-        # Write header.
-        tex_file.write(" ")
-        for model in self.log_container_per_model:
-            tex_file.write(" & {}".format(model))
-        tex_file.write("\\\\\n")
-
-        for approach in discarded_per_approach:
-            print(approach)
-            #  Average value over all models.
+            for method in discarded_per_method:
+                #  Average value over all models.
+                tex_file.write("\n\\hline\n")
+                tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(2, method))
+                value = util.set_precision(discarded_per_method[method] * 100, 2)
+                tex_file.write("\n& \\multicolumn{{{}}}{{c|}}{{{}}}".format(len(self.log_container_per_model), value))
+                tex_file.write("\\\\\n")
+                # Draw horizontal line spanning only under the multicolumn section.
+                tex_file.write("\n\\cline{{2-{}}}\n".format(len(self.log_container_per_model) + 1))
+                # Average value for each model.
+                for model in discarded_per_model_per_method:
+                    value = util.set_precision(discarded_per_model_per_method[model][method] * 100, 2)
+                    tex_file.write(" & \\makecell{{{}}}".format(value))
+                tex_file.write("\\\\\n")
+            
             tex_file.write("\n\\hline\n")
-            tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(2, approach))
-            value = util.set_precision(discarded_per_approach[approach] * 100, 2)
-            tex_file.write("\n& \\multicolumn{{4}}{{c|}}{{{}}}".format(value))
-            tex_file.write("\\\\\n")
-            # Draw horizontal line spanning only under the multicolumn section.
-            tex_file.write("\n\\cline{{2-{}}}\n".format(len(self.log_container_per_model) + 1))
-            # Average value for each model.
-            for model in discarded_per_model_per_approach:
-                value = util.set_precision(discarded_per_model_per_approach[model][approach] * 100, 2)
-                tex_file.write(" & \\makecell{{{}}}".format(value))
-            tex_file.write("\\\\\n")
-        
-        tex_file.write("\n\\hline\n")
-        tex_file.write("\\end{tabular}")
-        tex_file.write("\n\\end{table*}\n")
-        tex_file.close()
+            tex_file.write("\\end{tabular}")
+            tex_file.write("\n\\end{table*}\n")
+            tex_file.close()
 
+    def _generate_statistic_per_approach_horizontal(self, filename):
+            tex_file = open(filename, "w")
 
+            tex_file.write("\n\\begin{table*}\n")
+            tex_file.write("\\centering\n")
+            tex_file.write("\\begin{tabular}{|c|")
+            tex_file.write(" c|" * len(self.approach_list))
+            tex_file.write("}\n")
+            tex_file.write("\\hline\n")
+
+            discarded_per_approach = self.get_average_discarded_per_approach()
+            discarded_per_model_per_approach = self.get_average_discarded_per_model_per_approach()
+
+            # Write header.
+            tex_file.write(" ")
+            for approach in discarded_per_approach:
+                tex_file.write(" & \\rotatebox{{75}}{{{}}}".format(approach))
+            tex_file.write("\\\\\n")
+
+            for model in self.log_container_per_model:
+                tex_file.write("{}".format(model))
+                
+                for approach in discarded_per_approach:
+                    value = util.set_precision(discarded_per_model_per_approach[model][approach] * 100, 2)
+                    tex_file.write(" & {}".format(value))
+                tex_file.write("\\\\\n")
+
+            tex_file.write("\\hline\n")
+            tex_file.write("Average")
+            for approach in discarded_per_approach:
+                value = util.set_precision(discarded_per_approach[approach] * 100, 2)
+                tex_file.write(" & {}".format(value))
+            tex_file.write("\\\\\n")
+            
+            tex_file.write("\n\\hline\n")
+            tex_file.write("\\end{tabular}")
+            tex_file.write("\n\\end{table*}\n")
+            tex_file.close()
+
+    def _generate_statistic_per_method_horizontal(self, filename):
+            tex_file = open(filename, "w")
+
+            tex_file.write("\n\\begin{table*}\n")
+            tex_file.write("\\centering\n")
+            tex_file.write("\\begin{tabular}{|c|")
+            tex_file.write(" c|" * len(self.method_list))
+            tex_file.write("}\n")
+            tex_file.write("\\hline\n")
+
+            discarded_per_method = self.get_average_discarded_per_method()
+            discarded_per_model_per_method = self.get_average_discarded_per_model_per_method()
+
+            # Write header.
+            tex_file.write(" ")
+            for method in discarded_per_method:
+                tex_file.write(" & \\rotatebox{{75}}{{{}}}".format(method))
+            tex_file.write("\\\\\n")
+
+            for model in self.log_container_per_model:
+                tex_file.write("{}".format(model))
+                
+                for method in discarded_per_method:
+                    value = util.set_precision(discarded_per_model_per_method[model][method] * 100, 2)
+                    tex_file.write(" & {}".format(value))
+                tex_file.write("\\\\\n")
+
+            tex_file.write("\\hline\n")
+            tex_file.write("Average")
+            for method in discarded_per_method:
+                value = util.set_precision(discarded_per_method[method] * 100, 2)
+                tex_file.write(" & {}".format(value))
+            tex_file.write("\\\\\n")
+            
+            tex_file.write("\n\\hline\n")
+            tex_file.write("\\end{tabular}")
+            tex_file.write("\n\\end{table*}\n")
+            tex_file.close()
 
     # \usepackage{makecell} needed.
     # \usepackage{multirow} needed.
+    # Generates a table showing how many viewpoint candidates were provided, how many were used after filtering,
+    # what was the number of optimal viewpoints and the coverage reached.
+    # If `with_discarded` is set, the table will include the information about how many viewpoints were available
+    # before and after filtering, otherwise only the total number of used viewpoints will be written.
     def generate_performance_tex_table(self, output_path = "./", coverage_threshold=0.99, with_discarded=True):
         filename = output_path
         if with_discarded:
@@ -208,6 +307,7 @@ class Benchmark:
         tex_file.close()
 
     # \usepackage{longtable} needed.
+    # Performance of every OVP log file.
     def generate_complete_tex_table(self, output_path = "./"):
         tex_file = open(output_path + "complete_table.tex", "w")
 

@@ -1,5 +1,6 @@
 
 from Benchmark import Benchmark
+from Benchmark import TableOrientation
 from Log import Log
 from LogContainer import LogContainer
 from Vis import Vis
@@ -88,7 +89,8 @@ def main():
         log_container_per_model[model].print_status()
         vis.set_logs(log_container_per_model[model])
         vis.generate_graphs()
-        vis.save_graphs(prefix="{}_{}".format(graph_filename_prefix, model), output_path="./data/")
+        prefix = model if graph_filename_prefix == "" else "{}_{}".format(graph_filename_prefix, model)
+        vis.save_graphs(prefix=prefix, output_path="./data/")
         # vis.show_graphs()
 
     benchmark = Benchmark()
@@ -96,7 +98,7 @@ def main():
     benchmark.generate_performance_tex_table(output_path="./data/", coverage_threshold=0.98, with_discarded=True)
     benchmark.generate_performance_tex_table(output_path="./data/", coverage_threshold=0.98, with_discarded=False)
     benchmark.generate_complete_tex_table(output_path="./data/")
-    benchmark.generate_statistic_tex(output_path="./data/")
+    benchmark.generate_statistic_tex(orientation=TableOrientation.VERTICAL, output_path="./data/")
     print("average duration per model", benchmark.get_average_RT_duration_per_model())
     benchmark.get_average_discarded_per_model()
 

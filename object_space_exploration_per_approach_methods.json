@@ -1,5 +1,5 @@
 {
-    "SphereSampling": [
+    "SpaceSampling": [
         "AvgBbox",
         "MaxBbox",
         "MinBbox",
@@ -10,14 +10,16 @@
         "MixedRepositioned",
         "MixedRepositionedNormal",
         "NoDisplacement"],
-    "VertexBased": [
+    "VertexSampling": [
         "VertexBBoxCenter",
-        "VertexNormal"],
-    "GeometryBased": [
+        "VertexNormal",
+        "VertexGronle"],
+    "PatchSampling": [
         "Area",
         "ExactCurv",
         "ThinPlate",
-        "NormalDev"]
+        "NormalDev",
+        "NoSubdivision"]
 }
 
 
