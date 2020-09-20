@@ -1,4 +1,4 @@
-#ViewpointOptimizationBenchmark
+# ViewpointOptimizationBenchmark
 Comparison of optimization viewpoint data written in format
 ```
 {
@@ -43,7 +43,7 @@ Comparison of optimization viewpoint data written in format
     }
 }
 ```
-## Ourputs
+## Outputs
 Outputs in `/data` directory:
 * coverage convergence graphs
 * best performance table in LaTex (`performance_table.tex`)
