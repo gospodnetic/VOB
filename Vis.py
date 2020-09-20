@@ -24,7 +24,7 @@ class Vis:
                 x = np.array(range(len(y)))
                 ax.plot(x, y, c="0.4", alpha=0.2)
 
-            ax.set_xlim(0,45)
+            ax.set_xlim(0,110)
             ax.set_ylim(0,100)
 
             ax.set_xlabel("Number of viewpoints")

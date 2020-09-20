@@ -67,7 +67,6 @@ def main():
             log = Log(filename)
             logs.append(log)
         except Exception as e:
-            # TODO add verbose
             # print("Error: {}\nSkipping file".format(e))
             continue
 

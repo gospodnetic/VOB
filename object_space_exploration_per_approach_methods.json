@@ -19,7 +19,10 @@
         "ExactCurv",
         "ThinPlate",
         "NormalDev",
-        "NoSubdivision"]
+        "NoSubdivision"],
+    "Generate_and_use": [
+        "Generate-and-Use"
+    ]
 }
 
 

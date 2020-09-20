@@ -251,7 +251,7 @@ class Benchmark:
                 tex_file.write("\\multirow{{{}}}{{*}}{{\\makecell{{{}}}}}".format(method_count, approach))
 
                 for method in self.methods_per_approach[approach]:
-                    tex_file.write("\n& \makecell{{{}}}".format(method))
+                    tex_file.write("\n& \\makecell{{{}}}".format(method))
 
                     for model in models:
                         try:
