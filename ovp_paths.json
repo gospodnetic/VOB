@@ -1,5 +1,5 @@
 [
-    "/home/pastrva/Projects/VirtualImageProcessing/Fileserver/Papers/2020_Generate_and_Test_Comparison/Results/WithFiltering/gear",
-    "/home/pastrva/Projects/VirtualImageProcessing/Fileserver/Papers/2020_Generate_and_Test_Comparison/Results/WithFiltering/hirth",
-    "/home/pastrva/Projects/VirtualImageProcessing/Fileserver/Papers/2020_Generate_and_Test_Comparison/Results/WithFiltering/time_shaft"
+    "./Results/WithFiltering/gear",
+    "./Results/WithFiltering/hirth",
+    "./Results/WithFiltering/crankshaft"
 ]
